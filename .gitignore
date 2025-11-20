@@ -1,0 +1,7 @@
+.env
+.secrets/
+secrets.toml
+data/*.json
+__pycache__/
+*.pyc
+*.mp3
