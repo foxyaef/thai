@@ -6,25 +6,30 @@ import pandas as pd
 from pathlib import Path
 from openai import OpenAI
 
-ADMIN_PASSWORD = "thaivocas"  # 원하는 비밀번호로 변경
+
+# 관리자 비밀번호
+ADMIN_PASSWORD = "thaivocas"
 
 # 세션 상태 초기화
 if "admin_authenticated" not in st.session_state:
     st.session_state.admin_authenticated = False
 
-# 로그인 시도
+# 로그인 처리
 if not st.session_state.admin_authenticated:
-    st.warning("이 페이지는 관리자 전용입니다.\nAPI 비용 때문에 접근을 제한합니다. 죄송합니다 ㅎㅎ")
+    st.warning(
+        "이 페이지는 관리자 전용입니다.\nAPI 비용 때문에 접근을 제한합니다. 죄송합니다 ㅎㅎ"
+    )
     password_input = st.text_input("관리자 비밀번호 입력", type="password")
-    if st.button("로그인"):
+    login_clicked = st.button("로그인")
+    
+    if login_clicked:
         if password_input == ADMIN_PASSWORD:
             st.session_state.admin_authenticated = True
             st.success("✅ 로그인 성공!")
-            st.experimental_rerun()  # 페이지 새로고침
+            st.experimental_rerun()  # 만약 rerun에서 계속 오류나면 아래 방법으로 대체 가능
         else:
             st.error("❌ 비밀번호가 틀렸습니다.")
-    st.stop()  # 비밀번호가 맞지 않으면 아래 코드 실행 중단
-
+    st.stop()  # 로그인 전에는 아래 코드 실행 금지
 
 # 데이터 저장 폴더
 DATA_DIR = Path("data")
