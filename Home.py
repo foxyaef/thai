@@ -10,7 +10,7 @@ DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
 
 st.set_page_config(page_title="Thai Vocabulary Learning", layout="wide")
-st.title("🇹🇭 태국어 단어 학습")
+
 
 # ------------------------
 # 데이터 불러오기

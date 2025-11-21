@@ -102,9 +102,12 @@ with c1:
         if not new_name:
             st.error("세트 이름을 입력하세요.")
         else:
-            save_set(new_name, [])
+            # 빈 리스트 대신 기본 항목 1개 포함
+            default_item = {"thai": "", "pron_kor": "", "meaning_ko": ""}
+            save_set(new_name, [default_item])
             st.success(f"'{new_name}' 세트 생성 완료")
             st.experimental_rerun()
+)
 
 with c2:
     existing = list_sets()
