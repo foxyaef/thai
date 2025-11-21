@@ -104,7 +104,7 @@ if st.button("GPT 자동 생성 시작"):
 - 위 목록에 포함된 단어는 절대로 생성하지 마라.
 - 기존 단어와 철자가 같은 단어도 생성 금지.
 
-{num}개의 새로운 태국어 단어를 아래 형식으로 JSON 배열로 출력해줘:
+{10}개의 새로운 태국어 단어를 아래 형식으로 JSON 배열로 출력해줘:
 
 [
   {{
@@ -137,7 +137,8 @@ if st.button("GPT 자동 생성 시작"):
         temperature=0.7
     )
 
-    result_text = response.choices[0].message["content"]
+    result_text = response.choices[0].message.content
+    print(result_text)
 
     st.code(result_text)
 
