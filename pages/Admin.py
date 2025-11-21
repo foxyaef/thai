@@ -4,11 +4,12 @@ import json
 import os
 import pandas as pd
 from pathlib import Path
-import openai
+from openai import OpenAI
 
 # 데이터 저장 폴더
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
+
 MAX_WORDS = 100
 
 st.set_page_config(page_title="Admin - Thai Words")
@@ -17,10 +18,10 @@ st.title("🛠️ 관리자 페이지")
 st.info("단어 묶음 생성 / 수정 / 자동 생성 기능")
 
 # OpenAI 설정
-OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-if OPENAI_API_KEY:
-    openai.api_key = OPENAI_API_KEY
+api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=api_key)
 MODEL = "gpt-4o-mini"
+
 
 # UTILS
 def list_sets():
@@ -39,7 +40,10 @@ def save_set(name, data):
 def delete_set(name):
     (DATA_DIR / f"{name}.json").unlink()
 
-# ========== 세트 만들기/삭제 ==========
+
+# --------------------------
+# ▣ 세트 생성/삭제
+# --------------------------
 st.subheader("📁 세트 관리")
 
 c1, c2 = st.columns(2)
@@ -62,63 +66,102 @@ with c2:
         st.success("삭제 완료")
         st.experimental_rerun()
 
+
 st.markdown("---")
 
-# ========== GPT 자동 생성 ==========
+
+# --------------------------
+# ▣ GPT 자동 생성
+# --------------------------
 st.subheader("🤖 GPT 자동 단어 생성")
 
 autoname = st.text_input("생성할 세트 이름")
 num = st.slider("단어 수", 10, 100, 100)
 
 if st.button("GPT 자동 생성 시작"):
-    if not OPENAI_API_KEY:
+    if not api_key:
         st.error("OpenAI API 키가 필요합니다")
         st.stop()
 
+    # ▣ 기존 세트의 모든 태국어 단어 수집
+    all_existing = []
+    for set_name in list_sets():
+        data = load_set(set_name)
+        for item in data:
+            if "thai" in item:
+                all_existing.append(item["thai"])
+
+    existing_list_text = json.dumps(all_existing, ensure_ascii=False)
+
+    # 🔥 GPT 프롬프트
     prompt = f"""
 너는 태국어 단어를 JSON 형식으로 생성하는 도우미야.
-아래 형식의 객체 100개를 JSON 배열로 반환해줘.
+
+이미 존재하는 태국어 단어 목록은 다음과 같아:
+{existing_list_text}
+
+⚠️ 중요한 규칙:
+- 위 목록에 포함된 단어는 절대로 생성하지 마라.
+- 기존 단어와 철자가 같은 단어도 생성 금지.
+
+{num}개의 새로운 태국어 단어를 아래 형식으로 JSON 배열로 출력해줘:
 
 [
   {{
     "thai": "단어",
     "transliteration": "로마자",
-    "pron_kor": "한국어근사발음",
+    "pron_kor": "한국어발음표기",
     "pos": "품사",
     "meaning_ko": "뜻",
     "example_th": "예문",
-    "example_ko": "예문번역"
-  }},
-  ...
+    "example_ko": "예문 번역"
+  }}
 ]
 
-설명 없이 JSON 배열만 반환해줘.
+조건:
+- 학교에서 자주 쓰는 단어
+- 10대 학생들의 일상 대화에 쓰는 단어
+- 태국 여행 시 유용한 단어
+을 섞어서 생성해줘.
+
+설명 없이 JSON 배열만 정확히 반환해줘.
 """
 
-    with st.spinner("GPT가 단어 생성 중..."):
-        res = openai.ChatCompletion.create(
-            model=MODEL,
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }],
-            max_tokens=2500,
-            temperature=0.7
-        )
+    # === GPT 호출 ===
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": "당신은 태국어 단어 생성기입니다."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.7
+    )
 
-    text = res.choices[0].message.content
+    result_text = response.choices[0].message["content"]
+
+    st.code(result_text)
+
+    # === JSON 파싱 ===
     try:
-        data = json.loads(text)
-        data = data[:num]
-        save_set(autoname, data)
-        st.success(f"세트 '{autoname}' 생성 완료 ({len(data)}개)")
-    except:
-        st.error("GPT 출력 파싱 실패")
-        st.code(text)
+        data = json.loads(result_text)
 
-st.markdown("---")
+        # 혹시라도 GPT가 중복 단어를 넣었을 때 필터링
+        filtered = [item for item in data if item["thai"] not in all_existing]
+        filtered = filtered[:num]
 
-# ========== 수동 편집 ==========
+        save_set(autoname, filtered)
+        st.success(f"세트 '{autoname}' 생성 완료 ({len(filtered)}개)")
+
+    except Exception as e:
+        st.error("❌ GPT 출력 JSON 파싱 실패")
+        st.code(result_text)
+        st.error(str(e))
+
+
+
+# --------------------------
+# ▣ 수동 편집
+# --------------------------
 st.subheader("✍️ 단어 수동 편집")
 
 sets = list_sets()
