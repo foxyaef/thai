@@ -58,11 +58,17 @@ with col2:
     audio_bytes = generate_tts(item.get("thai",""))
     st.audio(audio_bytes, format="audio/mp3")
 
+# 세션 상태 초기화
+if "index" not in st.session_state:
+    st.session_state["index"] = 1
+
 # 이전/다음 버튼
 c1, c2, c3 = st.columns(3)
 if c1.button("◀ 이전"):
-    st.session_state["index"] = max(1, idx-1)
-    st.experimental_rerun()
+    st.session_state["index"] = max(1, st.session_state["index"] - 1)
 if c3.button("다음 ▶"):
-    st.session_state["index"] = min(len(words), idx+1)
-    st.experimental_rerun()
+    st.session_state["index"] = min(len(words), st.session_state["index"] + 1)
+
+# 현재 단어
+idx = st.session_state["index"]
+item = words[idx-1]
