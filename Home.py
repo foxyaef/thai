@@ -1,7 +1,7 @@
-# Home.py
+# Home.py 수정 버전
+
 import streamlit as st
 import json
-import os
 from pathlib import Path
 from gtts import gTTS
 from io import BytesIO
@@ -12,7 +12,9 @@ DATA_DIR.mkdir(exist_ok=True)
 st.set_page_config(page_title="Thai Vocabulary Learning", layout="wide")
 st.title("🇹🇭 태국어 단어 학습")
 
-# Load sets
+# ------------------------
+# 데이터 불러오기
+# ------------------------
 def list_sets():
     return sorted([f.stem for f in DATA_DIR.glob("*.json")])
 
@@ -37,17 +39,37 @@ if not selected:
     st.stop()
 
 words = load_set(selected)
-
 if not words:
     st.warning("이 세트에는 단어가 없습니다.")
     st.stop()
 
+# ------------------------
+# 전체 단어 목록 표시
+# ------------------------
+st.sidebar.markdown("### 전체 단어 목록")
+for i, w in enumerate(words, start=1):
+    st.sidebar.write(f"{i}. {w.get('thai','')} - {w.get('meaning_ko','')}")
+
+# ------------------------
+# 단어 카드 보기
+# ------------------------
 st.header(f"📘 세트: {selected}")
 
-# 카드식 단어 보기
-idx = st.number_input("단어 번호", min_value=1, max_value=len(words), value=1)
+# 세션 상태 초기화
+if "index" not in st.session_state:
+    st.session_state["index"] = 1
+
+# 번호 선택으로 단어 이동
+idx = st.number_input(
+    "단어 번호 선택",
+    min_value=1,
+    max_value=len(words),
+    value=st.session_state["index"]
+)
+st.session_state["index"] = idx
 item = words[idx-1]
 
+# 카드 표시
 col1, col2 = st.columns([2,1])
 with col1:
     st.markdown(f"## {item.get('thai','')}")
@@ -57,18 +79,3 @@ with col2:
     st.markdown("### 발음 듣기")
     audio_bytes = generate_tts(item.get("thai",""))
     st.audio(audio_bytes, format="audio/mp3")
-
-# 세션 상태 초기화
-if "index" not in st.session_state:
-    st.session_state["index"] = 1
-
-# 이전/다음 버튼
-c1, c2, c3 = st.columns(3)
-if c1.button("◀ 이전"):
-    st.session_state["index"] = max(1, st.session_state["index"] - 1)
-if c3.button("다음 ▶"):
-    st.session_state["index"] = min(len(words), st.session_state["index"] + 1)
-
-# 현재 단어
-idx = st.session_state["index"]
-item = words[idx-1]
