@@ -107,7 +107,7 @@ with c1:
             save_set(new_name, [default_item])
             st.success(f"'{new_name}' 세트 생성 완료")
             st.experimental_rerun()
-)
+
 
 with c2:
     existing = list_sets()
