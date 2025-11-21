@@ -7,27 +7,6 @@ from pathlib import Path
 from openai import OpenAI
 
 
-# 관리자 비밀번호
-ADMIN_PASSWORD = "thaivoca"
-
-# 세션 상태 초기화
-if "admin_authenticated" not in st.session_state:
-    st.session_state.admin_authenticated = False
-
-# 로그인 처리
-if not st.session_state.admin_authenticated:
-    st.warning(
-        "이 페이지는 관리자 전용입니다.\nAPI 비용 때문에 접근을 제한합니다. 죄송합니다 ㅎㅎ"
-    )
-    password_input = st.text_input("관리자 비밀번호 입력", type="password")
-    if st.button("로그인"):
-        if password_input == ADMIN_PASSWORD:
-            st.session_state.admin_authenticated = True
-            st.success("✅ 로그인 성공! 이제 관리자 기능 사용 가능")
-        else:
-            st.error("❌ 비밀번호가 틀렸습니다.")
-    st.stop()  # 로그인 전이면 아래 관리자 페이지 코드 실행 중단
-
 # 데이터 저장 폴더
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
