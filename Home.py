@@ -59,15 +59,7 @@ st.header(f"📘 세트: {selected}")
 if "index" not in st.session_state:
     st.session_state["index"] = 1
 
-# 번호 선택으로 단어 이동
-idx = st.number_input(
-    "단어 번호 선택",
-    min_value=1,
-    max_value=len(words),
-    value=st.session_state["index"]
-)
-st.session_state["index"] = idx
-item = words[idx-1]
+
 
 # 카드 표시
 col1, col2 = st.columns([2,1])
@@ -79,3 +71,13 @@ with col2:
     st.markdown("### 발음 듣기")
     audio_bytes = generate_tts(item.get("thai",""))
     st.audio(audio_bytes, format="audio/mp3")
+
+# 번호 선택으로 단어 이동
+idx = st.number_input(
+    "단어 번호 선택",
+    min_value=1,
+    max_value=len(words),
+    value=st.session_state["index"]
+)
+st.session_state["index"] = idx
+item = words[idx-1]
