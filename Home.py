@@ -52,15 +52,7 @@ col1, col2 = st.columns([2,1])
 with col1:
     st.markdown(f"## {item.get('thai','')}")
     st.write(f"**의미(한글):** {item.get('meaning_ko','')}")
-    st.write(f"**품사:** {item.get('pos','')}")
-    st.write(f"**로마자:** {item.get('transliteration','')}")
     st.write(f"**한국어 발음:** {item.get('pron_kor','')}")
-
-    st.markdown("**예문(Thai)**")
-    st.write(item.get("example_th",""))
-    st.markdown("**예문(Korean)**")
-    st.write(item.get("example_ko",""))
-
 with col2:
     st.markdown("### 발음 듣기")
     audio_bytes = generate_tts(item.get("thai",""))

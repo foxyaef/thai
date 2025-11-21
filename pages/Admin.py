@@ -6,6 +6,26 @@ import pandas as pd
 from pathlib import Path
 from openai import OpenAI
 
+ADMIN_PASSWORD = "thaivocas"  # 원하는 비밀번호로 변경
+
+# 세션 상태 초기화
+if "admin_authenticated" not in st.session_state:
+    st.session_state.admin_authenticated = False
+
+# 로그인 시도
+if not st.session_state.admin_authenticated:
+    st.warning("이 페이지는 관리자 전용입니다.\nAPI 비용 때문에 접근을 제한합니다. 죄송합니다 ㅎㅎ")
+    password_input = st.text_input("관리자 비밀번호 입력", type="password")
+    if st.button("로그인"):
+        if password_input == ADMIN_PASSWORD:
+            st.session_state.admin_authenticated = True
+            st.success("✅ 로그인 성공!")
+            st.experimental_rerun()  # 페이지 새로고침
+        else:
+            st.error("❌ 비밀번호가 틀렸습니다.")
+    st.stop()  # 비밀번호가 맞지 않으면 아래 코드 실행 중단
+
+
 # 데이터 저장 폴더
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
@@ -76,7 +96,7 @@ st.markdown("---")
 st.subheader("🤖 GPT 자동 단어 생성")
 
 autoname = st.text_input("생성할 세트 이름")
-num = st.slider("단어 수", 10, 100, 100)
+num = st.slider("단어 수", 10, 50, 50)
 
 if st.button("GPT 자동 생성 시작"):
     if not api_key:
@@ -104,17 +124,13 @@ if st.button("GPT 자동 생성 시작"):
 - 위 목록에 포함된 단어는 절대로 생성하지 마라.
 - 기존 단어와 철자가 같은 단어도 생성 금지.
 
-{10}개의 새로운 태국어 단어를 아래 형식으로 JSON 배열로 출력해줘:
+{num}개의 새로운 태국어 단어를 아래 형식으로 JSON 배열로 출력해줘:
 
 [
   {{
     "thai": "단어",
-    "transliteration": "로마자",
     "pron_kor": "한국어발음표기",
-    "pos": "품사",
     "meaning_ko": "뜻",
-    "example_th": "예문",
-    "example_ko": "예문 번역"
   }}
 ]
 
