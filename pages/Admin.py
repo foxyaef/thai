@@ -160,7 +160,7 @@ if st.button("GPT 자동 생성 시작"):
 [
   {{
     "thai": "단어",
-    "pron_kor": "한국어발음표기",
+    "pron_kor": "한글발음표기",
     "meaning_ko": "뜻"
   }}
 ]
