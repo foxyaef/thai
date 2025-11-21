@@ -8,7 +8,7 @@ from openai import OpenAI
 
 
 # 관리자 비밀번호
-ADMIN_PASSWORD = "thaivocas"
+ADMIN_PASSWORD = "thaivoca"
 
 # 세션 상태 초기화
 if "admin_authenticated" not in st.session_state:
@@ -20,16 +20,13 @@ if not st.session_state.admin_authenticated:
         "이 페이지는 관리자 전용입니다.\nAPI 비용 때문에 접근을 제한합니다. 죄송합니다 ㅎㅎ"
     )
     password_input = st.text_input("관리자 비밀번호 입력", type="password")
-    login_clicked = st.button("로그인")
-    
-    if login_clicked:
+    if st.button("로그인"):
         if password_input == ADMIN_PASSWORD:
             st.session_state.admin_authenticated = True
-            st.success("✅ 로그인 성공!")
-            st.experimental_rerun()  # 만약 rerun에서 계속 오류나면 아래 방법으로 대체 가능
+            st.success("✅ 로그인 성공! 이제 관리자 기능 사용 가능")
         else:
             st.error("❌ 비밀번호가 틀렸습니다.")
-    st.stop()  # 로그인 전에는 아래 코드 실행 금지
+    st.stop()  # 로그인 전이면 아래 관리자 페이지 코드 실행 중단
 
 # 데이터 저장 폴더
 DATA_DIR = Path("data")
